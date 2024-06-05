@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineering the Edge: AI on Boring Hardware</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* Greyscale Heavy Workman Theme */
+    :root {
+      --bg: #ececec;
+      --fg: #0a0a0a;
+      --panel-bg: #ffffff;
+      --border-heavy: #0a0a0a;
+      --border-light: #999999;
+      --text: #222222;
+      --text-mute: #555555;
+      
+      --font-body: 'Public Sans', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* Layout */
+    .viewport {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+    
+    /* Heavy borders for workman feel */
+    header {
+      border: 4px solid var(--border-heavy);
+      background-color: var(--panel-bg);
+      padding: 3rem;
+      margin-bottom: 4rem;
+      box-shadow: 8px 8px 0 var(--border-light);
+    }
+
+    h1 {
+      font-family: var(--font-mono);
+      font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+      font-weight: 700;
+      color: var(--fg);
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+      margin-bottom: 1.5rem;
+    }
+
+    .directive {
+      font-size: 1.25rem;
+      color: var(--text-mute);
+      max-width: 800px;
+      line-height: 1.5;
+    }
+
+    p { margin-bottom: 1.5rem; }
+    
+    /* System Utility Panel H2s */
+    h2 {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      background-color: var(--fg);
+      color: var(--panel-bg);
+      display: block;
+      padding: 0.75rem 1.5rem;
+      margin: 5rem 0 2rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--fg);
+      margin: 2.5rem 0 1rem 0;
+      border-bottom: 2px solid var(--border-heavy);
+      padding-bottom: 0.25rem;
+    }
+
+    /* Monospace Callouts */
+    .utility-callout {
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-heavy);
+      padding: 1.5rem;
+      margin: 2.5rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      box-shadow: 4px 4px 0 var(--border-light);
+    }
+    .utility-callout strong { display: block; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .utility-callout code { color: #555555; }
+
+    /* Split layout for the visual */
+    .hardware-diagram-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+      margin: 4rem 0;
+      align-items: center;
+    }
+    
+    .svg-panel {
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-heavy);
+      padding: 2rem;
+    }
+    
+    @media (max-width: 800px) {
+      .hardware-diagram-grid { grid-template-columns: 1fr; }
+    }
+
+    figcaption {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-mute);
+      margin-top: 1rem;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="viewport">
+    <header>
+      <h1>Engineering the Edge: AI on Boring Hardware</h1>
+      <p class="directive">Model engineering tutorials assume ubiquitous GPUs, limitless memory, and reliable gigabit internet. Deploying a computer vision application to a fleet of low-end Windows tablets assigned to field technicians strips away all three. Building a dependable edge AI application requires abandoning architectural luxury and aggressively managing the severe constraints of a CPU-only reality.</p>
+    </header>
+
+    <p>The "Edge" is rarely a specialized TPU rack sitting in a regional datacenter. The true edge is an underpowered Windows 10 tablet tossed onto the passenger seat of an inspection truck. The processor is a mid-tier dual-core Intel CPU. The network connection is intermittent cellular connectivity. The primary business requirement is absolutely zero latency during field data capture.</p>
+
+    <p>If you attempt to load a standard 16-bit PyTorch model onto this hardware, the application will consume 4GB of RAM and take twelve seconds to infer a single image, melting the battery in the process. Succeeding in this environment requires treating the hardware constraints as the entire architecture, utilizing extreme model quantization, local caching, and deferred synchronization protocols.</p>
+
+    <h2>[PANEL_01: HARDWARE LIMITS & QUANTIZATION]</h2>
+
+    <p>We cannot change the physical hardware, so we must mutate the model. Standard neural networks utilize FP32 (32-bit floating point) weights, providing high precision at the cost of massive memory allocation and slow matrix multiplication on a CPU.</p>
+
+    <p>The core deployment strategy relies on transforming the original model into an ONNX (Open Neural Network Exchange) format and applying <strong>INT8 Quantization</strong>. Quantization aggressively rounds the 32-bit floating calculations into 8-bit integers. While this risks slight accuracy degradation (usually less than 2%), it reduces the model's physical footprint by 75% and massively accelerates CPU execution because integer math is exponentially cheaper than floating-point math.</p>
+
+    <div class="utility-callout">
+      <strong>CPU Execution Target</strong>
+      <code>> ORIGINAL: RetinaNet FP32 | 148MB | ~4.2s/frame  [REJECTED]</code><br>
+      <code>> DEPLOYED: ONNX INT8      | 37MB  | ~320ms/frame [ACCEPTED]</code>
+      <p style="margin-top: 1rem; font-family:var(--font-body);">By bounding the inference to under 500 milliseconds, the application maintains the illusion of an interactive, real-time tool rather than an unresponsive processing script.</p>
+    </div>
+
+    <!-- Wide Diagram Grid -->
+    <div class="hardware-diagram-grid">
+      <!-- CPU Budget Ring -->
+      <div class="svg-panel">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="100%">
+          <rect width="200" height="240" fill="#ffffff" />
+          <text x="100" y="20" font-family="'Space Mono', monospace" font-size="10" font-weight="700" text-anchor="middle" fill="#000000">CPU LOAD BUDGET</text>
+          
+          <!-- Outer Ring (100%) -->
+          <circle cx="100" cy="120" r="70" fill="none" stroke="#e0e0e0" stroke-width="15" />
+          
+          <!-- OS / Background (30%) -->
+          <path d="M 100 50 A 70 70 0 0 1 166.5 141.6" fill="none" stroke="#cccccc" stroke-width="15" />
+          
+          <!-- UI Thread (10%) -->
+          <path d="M 166.5 141.6 A 70 70 0 0 1 141.6 176.5" fill="none" stroke="#888888" stroke-width="15" />
+          
+          <!-- Inference Spike (50%) -->
+          <path d="M 141.6 176.5 A 70 70 0 0 1 41.3 81.3" fill="none" stroke="#111111" stroke-width="15" />
+
+          <!-- Center Text -->
+          <text x="100" y="115" font-family="'Space Mono', monospace" font-size="20" font-weight="700" text-anchor="middle" fill="#111111">2 CPU</text>
+          <text x="100" y="135" font-family="'Public Sans', sans-serif" font-size="9" text-anchor="middle" fill="#555555">CORES</text>
+
+          <!-- Legend -->
+          <rect x="25" y="200" width="10" height="10" fill="#111111" />
+          <text x="40" y="209" font-family="'Space Mono', monospace" font-size="8" fill="#111111">ONNX RUNTIME</text>
+          
+          <rect x="25" y="220" width="10" height="10" fill="#cccccc" />
+          <text x="40" y="229" font-family="'Space Mono', monospace" font-size="8" fill="#111111">WINDOWS OS / UI</text>
+        </svg>
+      </div>
+      
+      <!-- Local Pipeline -->
+      <div class="svg-panel">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 240" width="100%">
+          <rect width="450" height="240" fill="#ffffff" />
+          <text x="225" y="20" font-family="'Space Mono', monospace" font-size="10" font-weight="700" text-anchor="middle" fill="#000000">OFFLINE EXECUTION PIPELINE</text>
+          
+          <!-- Bounding Box (The Device) -->
+          <rect x="20" y="40" width="300" height="180" fill="none" stroke="#111111" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="170" y="55" font-family="'Public Sans', sans-serif" font-size="8" font-style="italic" text-anchor="middle" fill="#555555">Local Tablet Environment</text>
+          
+          <!-- Cloud Box -->
+          <rect x="360" y="140" width="70" height="60" fill="#111111" />
+          <text x="395" y="173" font-family="'Space Mono', monospace" font-size="10" font-weight="700" text-anchor="middle" fill="#ffffff">CLOUD</text>
+
+          <!-- Nodes -->
+          <rect x="40" y="80" width="80" height="40" fill="#eeeeee" stroke="#111111" stroke-width="1" />
+          <text x="80" y="103" font-family="'Space Mono', monospace" font-size="9" text-anchor="middle" fill="#111111">CAPTURE</text>
+          
+          <rect x="160" y="80" width="80" height="40" fill="#111111" />
+          <text x="200" y="103" font-family="'Space Mono', monospace" font-size="9" font-weight="700" text-anchor="middle" fill="#ffffff">ONNX INFER</text>
+          
+          <rect x="160" y="150" width="100" height="40" fill="#eeeeee" stroke="#111111" stroke-width="1" />
+          <text x="210" y="173" font-family="'Space Mono', monospace" font-size="9" text-anchor="middle" fill="#111111">LOCAL SQLITE</text>
+
+          <!-- Paths -->
+          <path d="M 120 100 L 160 100" stroke="#111111" stroke-width="2" marker-end="url(#arrow)" />
+          <path d="M 200 120 L 200 150" stroke="#111111" stroke-width="2" marker-end="url(#arrow)" />
+          
+          <!-- Async Sync Loop -->
+          <path d="M 260 170 L 360 170" stroke="#111111" stroke-width="2" stroke-dasharray="2 2" marker-end="url(#arrow)" />
+          <text x="310" y="165" font-family="'Public Sans', sans-serif" font-size="8" text-anchor="middle" fill="#555555">Threaded Sync</text>
+
+          <defs>
+            <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill="#111111" />
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+    <figcaption>Fig 1. — Hardware limits must force software design. The CPU budget allocates processing spikes strictly to the ONNX runtime. The pipeline operates entirely within the device boundaries (dashed box), writing inference results to an embedded SQLite database. The sync to the cloud is completely decoupled from the inference loop.</figcaption>
+
+    <h2>[PANEL_02: PERSISTENCE & DEFERRED SYNC]</h2>
+
+    <p>An application operating in a concrete basement will experience 100% packet loss. If the inference pipeline attempts an API call to a central server to save the analyzed data, the application will hang.</p>
+
+    <p>To survive disconnection, the application treats the cloud as an eventual convenience rather than a runtime dependency. The ONNX inference deposits its findings directly into a local SQLite database that resides on the tablet's hard drive. The SQLite file acts as an immutable queue layer. The user captures an image, the model infers a defect, the local database logs the row, and the UI immediately clears for the next capture.</p>
+
+    <p>A background <code>SyncWorker</code> thread runs constantly, pinging for network availability. When the technician finally drives into a 4G zone, the worker detects the connection and quietly drains the SQLite logs via bulk REST payloads to the central server. If the connection drops mid-sync, the transaction is rolled back locally and retried dynamically an hour later.</p>
+
+    <h2>[PANEL_03: DEPLOYMENT PRAGMATISM]</h2>
+
+    <p>Shipping updates to laptops on the move requires an evasion of friction. We avoid convoluted Docker architectures that struggle on obscure Windows builds. The application is packaged as a static, self-contained binary using standard Windows installers (MSI), carrying the required ONNX runtime DLLs locally. The entire application directory lives securely outside of the OS update paths so Microsoft Patch Tuesdays do not silently brick the ML dependencies.</p>
+
+    <p>Building for boring hardware enforces necessary discipline. When you cannot rely on a GPU to cover up inefficient code, you write efficient code. When you cannot rely on LTE, you build bulletproof local persistence. The resulting application is devoid of architectural vanity; it simply launches instantly, infers reliably, and never loses the user's data.</p>
+  </div>
+</body>
+</html>

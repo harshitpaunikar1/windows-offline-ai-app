@@ -32,3 +32,7 @@
 
 - Task summary: One more pass: the output formatting looked messy when printed, so added a cleaner display block.
 - Deliverable: Minor but worth doing.
+## 2024-06-13 - Day 7: UI scaffold
+
+- Task summary: This was the middle stretch where the project started feeling real. I kept going and tried to build a simple HTML/CSS/JS shell for the main screens or flows, then cleaned up whatever looked confusing or weak from the earlier days. Once the base made some sense, I could finally move a bit faster and stop second guessing every tiny decision. A lot of the work here was really about workflow thinking, not just screens or files.
+- Deliverable: Ended the day with interface skeleton in hand, plus a few side notes on what still needed fixing later. It was not super polished, just stable enough that I felt okay moving forward.

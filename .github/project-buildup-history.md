@@ -44,3 +44,7 @@
 
 - Task summary: Weekend code review of my own work. Mostly reading, but ended up fixing three things that were bothering me.
 - Deliverable: Pushed before end of day.
+## 2024-06-17 - Day 9: Operational rules
+
+- Task summary: Closer to the end, I was mostly tightening things up instead of inventing new scope. The job for the day was to add validation, business rules, and edge cases from the workflow map so the final result looked a bit more complete. By now I had enough structure to keep going without staring at the screen too long, which honestly helped a lot. This kind of project only works if the logic feels practical, so I spent time checking the flow again and again.
+- Deliverable: Ended the day with rules and constraints in hand, plus a few side notes on what still needed fixing later. There were still a couple of loose parts, but nothing serious enough to block the next step.

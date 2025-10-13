@@ -12,3 +12,7 @@
 
 - Task summary: Added a warmup call on startup that runs a dummy query to populate the cache before the user's first real request. Eliminates the cold-start latency on first use.
 - Deliverable: Startup warmup call added to eliminate first-query cold-start delay.
+## 2025-10-13 - Day 5: Packaging
+
+- Task summary: Worked on packaging the Windows Offline AI App for distribution today. The goal is a single executable that bundles the model weights and the Python runtime so the user doesn't need to install anything. Used PyInstaller with a custom spec file. The first bundle attempt was 4.2GB which was too large. Profiled the dependencies and found that numpy was including the full BLAS library even though only the CPU path was needed. Switched to a lighter numpy build and got the bundle down to 1.8GB.
+- Deliverable: PyInstaller bundle created. Size reduced from 4.2GB to 1.8GB by optimizing BLAS dependency.

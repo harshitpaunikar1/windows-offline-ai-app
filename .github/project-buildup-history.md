@@ -20,3 +20,7 @@
 
 - Task summary: Spent today polishing the UI for the Windows Offline AI App. The earlier version had a functional but spartan interface. Added a chat history panel on the left, improved the response rendering to handle markdown formatting in model outputs, and added a keyboard shortcut for clearing the context window. Also fixed a window resize bug where the chat panel would not reflow properly when the window width changed.
 - Deliverable: Chat history panel added. Markdown rendering improved. Window resize bug fixed.
+## 2025-12-01 - Day 6: UI polish
+
+- Task summary: Added a settings panel that lets the user configure the context window size and response length limit without editing config files.
+- Deliverable: Settings panel added for context window and response length configuration.

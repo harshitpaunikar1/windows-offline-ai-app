@@ -16,3 +16,7 @@
 
 - Task summary: Worked on packaging the Windows Offline AI App for distribution today. The goal is a single executable that bundles the model weights and the Python runtime so the user doesn't need to install anything. Used PyInstaller with a custom spec file. The first bundle attempt was 4.2GB which was too large. Profiled the dependencies and found that numpy was including the full BLAS library even though only the CPU path was needed. Switched to a lighter numpy build and got the bundle down to 1.8GB.
 - Deliverable: PyInstaller bundle created. Size reduced from 4.2GB to 1.8GB by optimizing BLAS dependency.
+## 2025-12-01 - Day 6: UI polish
+
+- Task summary: Spent today polishing the UI for the Windows Offline AI App. The earlier version had a functional but spartan interface. Added a chat history panel on the left, improved the response rendering to handle markdown formatting in model outputs, and added a keyboard shortcut for clearing the context window. Also fixed a window resize bug where the chat panel would not reflow properly when the window width changed.
+- Deliverable: Chat history panel added. Markdown rendering improved. Window resize bug fixed.
